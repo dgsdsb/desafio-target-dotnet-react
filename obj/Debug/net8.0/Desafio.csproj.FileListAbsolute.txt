@@ -1,0 +1,14 @@
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\bin\Debug\net8.0\Desafio.exe
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\bin\Debug\net8.0\Desafio.deps.json
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\bin\Debug\net8.0\Desafio.runtimeconfig.json
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\bin\Debug\net8.0\Desafio.dll
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\bin\Debug\net8.0\Desafio.pdb
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\Desafio.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\Desafio.AssemblyInfoInputs.cache
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\Desafio.AssemblyInfo.cs
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\Desafio.csproj.CoreCompileInputs.cache
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\Desafio.dll
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\refint\Desafio.dll
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\Desafio.pdb
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\Desafio.genruntimeconfig.cache
+C:\Users\Douglas Barros\Documents\Fullstack - Node.js React.js\Desafio Target\obj\Debug\net8.0\ref\Desafio.dll

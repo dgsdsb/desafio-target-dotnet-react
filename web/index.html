@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Desafio DEV Target</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div class="tag">Frontend em React</div>
+      <h1>Desafio DEV Target</h1>
+      <p class="muted">Comissões, estoque e cálculo de juros.</p>
+    </div>
+    <div id="root"></div>
+  </div>
+
+  <script>
+    const { useEffect, useMemo, useState } = React;
+    const h = React.createElement;
+
+    const moeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    const calcComissao = (valor) => {
+      if (valor < 100) return 0;
+      if (valor <= 500) return valor * 0.01;
+      return valor * 0.05;
+    };
+
+    const fetchJson = async (path) => {
+      const resp = await fetch(path);
+      if (!resp.ok) throw new Error(`Erro ao carregar ${path}`);
+      return resp.json();
+    };
+
+    const useDados = () => {
+      const [vendas, setVendas] = useState([]);
+      const [estoque, setEstoque] = useState([]);
+      const [erro, setErro] = useState(null);
+
+      useEffect(() => {
+        Promise.all([fetchJson('./vendas.json'), fetchJson('./estoque.json')])
+          .then(([v, e]) => {
+            setVendas(v.vendas ?? []);
+            setEstoque(e.estoque ?? []);
+          })
+          .catch((err) => setErro(err.message));
+      }, []);
+
+      return { vendas, estoque, setEstoque, erro };
+    };
+
+    const Comissoes = ({ vendas }) => {
+      const resumo = useMemo(() => {
+        const map = new Map();
+        vendas.forEach((v) => {
+          const atual = map.get(v.vendedor) ?? { vendedor: v.vendedor, total: 0, vendas: 0, comissao: 0 };
+          atual.total += v.valor;
+          atual.vendas += 1;
+          atual.comissao += calcComissao(v.valor);
+          map.set(v.vendedor, atual);
+        });
+        return Array.from(map.values()).sort((a, b) => b.comissao - a.comissao);
+      }, [vendas]);
+
+      return h(
+        'div',
+        { className: 'card' },
+        h('h2', null, 'Comissões'),
+        h('p', { className: 'muted' }, 'Regras: 0% abaixo de 100 | 1% entre 100 e 500 | 5% a partir de 500.'),
+        h(
+          'ul',
+          null,
+          resumo.map((r) =>
+            h(
+              'li',
+              { key: r.vendedor, className: 'list-item' },
+              h(
+                'div',
+                null,
+                h('strong', null, r.vendedor),
+                h('div', { className: 'muted' }, `${r.vendas} vendas - ${moeda.format(r.total)}`)
+              ),
+              h('span', { className: 'pill' }, moeda.format(r.comissao))
+            )
+          )
+        )
+      );
+    };
+
+    const Estoque = ({ estoque, onAtualiza }) => {
+      const [codigo, setCodigo] = useState('');
+      const [quantidade, setQuantidade] = useState('');
+      const [tipo, setTipo] = useState('Entrada');
+      const [descricao, setDescricao] = useState('');
+      const [status, setStatus] = useState(null);
+
+      const registrar = (e) => {
+        e.preventDefault();
+        setStatus(null);
+
+        const cod = parseInt(codigo, 10);
+        const qtd = parseInt(quantidade, 10);
+        if (Number.isNaN(cod) || Number.isNaN(qtd) || qtd <= 0) {
+          setStatus({ tipo: 'error', msg: 'Informe código e quantidade validos.' });
+          return;
+        }
+
+        const produto = estoque.find((p) => p.codigoProduto === cod);
+        if (!produto) {
+          setStatus({ tipo: 'error', msg: 'Produto não encontrado.' });
+          return;
+        }
+
+        const saldo = tipo === 'Entrada' ? produto.estoque + qtd : produto.estoque - qtd;
+        if (saldo < 0) {
+          setStatus({ tipo: 'error', msg: 'Estoque insuficiente para saída.' });
+          return;
+        }
+
+        const atualizado = estoque.map((p) => (p.codigoProduto === cod ? { ...p, estoque: saldo } : p));
+        onAtualiza(atualizado);
+        setStatus({ tipo: 'success', msg: `Movimentacão registrada. Saldo: ${saldo}` });
+        setDescricao('');
+        setQuantidade('');
+      };
+
+      return h(
+        'div',
+        { className: 'card' },
+        h('h2', null, 'Estoque'),
+        h('p', { className: 'muted' }, 'Entrada/Saída com validacão e saldo atualizado.'),
+        h(
+          'ul',
+          null,
+          estoque.map((p) =>
+            h(
+              'li',
+              { key: p.codigoProduto, className: 'list-item' },
+              h(
+                'div',
+                null,
+                h('strong', null, `${p.codigoProduto} - ${p.descricaoProduto}`),
+                h('div', { className: 'muted' }, `Saldo: ${p.estoque} un.`)
+              )
+            )
+          )
+        ),
+        h(
+          'form',
+          { onSubmit: registrar },
+          h('label', null, 'Código do produto'),
+          h('input', {
+            value: codigo,
+            onChange: (e) => setCodigo(e.target.value),
+            placeholder: 'ex: 101'
+          }),
+          h('label', null, 'Quantidade'),
+          h('input', {
+            value: quantidade,
+            onChange: (e) => setQuantidade(e.target.value),
+            placeholder: 'ex: 5'
+          }),
+          h('label', null, 'Tipo'),
+          h(
+            'select',
+            { value: tipo, onChange: (e) => setTipo(e.target.value) },
+            h('option', null, 'Entrada'),
+            h('option', null, 'Saída')
+          ),
+          h('label', null, 'Descrição'),
+          h('input', {
+            value: descricao,
+            onChange: (e) => setDescricao(e.target.value),
+            placeholder: 'Opcional'
+          }),
+          h('button', { type: 'submit' }, 'Registrar movimentação'),
+          status && h('div', { className: `status ${status.tipo}` }, status.msg)
+        )
+      );
+    };
+
+    const Juros = () => {
+      const [principal, setPrincipal] = useState('');
+      const [vencimento, setVencimento] = useState('');
+      const [resultado, setResultado] = useState(null);
+
+      const calcular = () => {
+        const valor = parseFloat(principal.replace(',', '.'));
+        if (Number.isNaN(valor) || valor <= 0) {
+          setResultado({ tipo: 'error', msg: 'Valor inválido.' });
+          return;
+        }
+        const data = new Date(vencimento);
+        if (Number.isNaN(data.getTime())) {
+          setResultado({ tipo: 'error', msg: 'Data inválida.' });
+          return;
+        }
+        const hoje = new Date();
+        const dias = Math.max(0, Math.floor((hoje - data) / (1000 * 60 * 60 * 24)));
+        const juros = valor * 0.025 * dias;
+        setResultado({ tipo: 'success', dias, juros, total: valor + juros });
+      };
+
+      return h(
+        'div',
+        { className: 'card' },
+        h('h2', null, 'Juros de 2,5% ao dia'),
+        h('p', { className: 'muted' }, 'Juros simples até a data de hoje.'),
+        h('label', null, 'Valor'),
+        h('input', {
+          value: principal,
+          onChange: (e) => setPrincipal(e.target.value),
+          placeholder: 'ex: 1.500,00'
+        }),
+        h('label', null, 'Data de vencimento'),
+        h('input', {
+          type: 'date',
+          value: vencimento,
+          onChange: (e) => setVencimento(e.target.value)
+        }),
+        h('button', { onClick: calcular, type: 'button' }, 'Calcular'),
+        resultado && resultado.tipo === 'success' &&
+          h('div', { className: 'status success' }, `${resultado.dias} dia(s) em atraso - Juros: ${moeda.format(resultado.juros)} - Total: ${moeda.format(resultado.total)}`),
+        resultado && resultado.tipo === 'error' &&
+          h('div', { className: 'status error' }, resultado.msg)
+      );
+    };
+
+    const App = () => {
+      const { vendas, estoque, setEstoque, erro } = useDados();
+
+      if (erro) return h('div', { className: 'card' }, `Erro ao carregar dados: ${erro}`);
+      if (!vendas.length && !estoque.length) return h('div', { className: 'card' }, 'Carregando dados...');
+
+      return h(
+        'div',
+        { className: 'container' },
+        h(Comissoes, { vendas }),
+        h(Estoque, { estoque, onAtualiza: setEstoque }),
+        h(Juros)
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(h(App));
+  </script>
+</body>
+</html>
