@@ -28,7 +28,6 @@ Lê vendas.json e aplica a regra:
 100 a 500 → 1%
 
 > 500 → 5%
-Exibe o total final por vendedor.
 
 ### Estoque:
 
